@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -96,17 +97,19 @@
     padding: 24px 20px 20px;
     display: flex; flex-direction: column; align-items: center;
     transition: border-color 0.3s;
+    position: relative;
   }
   .gauge-card.turn {
     border-color: rgba(239, 68, 68, 0.5);
     box-shadow: 0 0 24px rgba(239, 68, 68, 0.08), inset 0 0 24px rgba(239, 68, 68, 0.04);
   }
   .card-header {
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: center; align-items: center;
     width: 100%; margin-bottom: 4px;
   }
-  .person-name { font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; }
+  .person-name { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
   .turn-tag {
+    position: absolute; top: 18px; inset-inline-end: 18px;
     font-size: 10px; font-weight: 600; color: var(--warn);
     letter-spacing: 0.06em; padding: 2px 8px;
     border: 1px solid rgba(239, 68, 68, 0.4);
@@ -340,15 +343,29 @@
   .toast-undo:hover { color: white; }
 
   @media (max-width: 520px) {
-    .container { padding: 20px 16px 32px; }
+    body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+    .container { padding: 20px 16px calc(32px + env(safe-area-inset-bottom)); }
+    header { margin-bottom: 24px; padding-bottom: 16px; }
+    .brand h1 { font-size: 22px; }
+    .brand-sub { font-size: 13px; }
     .gauges { grid-template-columns: 1fr; gap: 14px; }
-    .days-num { font-size: 40px; }
-    .gauge-svg { max-width: 260px; }
-    .entry { grid-template-columns: auto auto 1fr auto; gap: 10px; padding: 12px 14px; }
-    .entry-date { font-size: 11px; }
+    .gauge-card { padding: 22px 20px 20px; }
+    .person-name { font-size: 26px; }
+    .days-num { font-size: 44px; }
+    .days-unit { font-size: 14px; }
+    .last-line { font-size: 12px; }
+    .gauge-svg { max-width: 300px; }
+    .log-btn { padding: 14px; font-size: 15px; }
+    .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-value { font-size: 20px; }
+    .stat-tile { padding: 14px 6px; }
+    .entry { grid-template-columns: auto auto 1fr auto; gap: 10px; padding: 14px 14px; }
+    .entry-name { font-size: 14px; }
+    .entry-date { font-size: 12px; }
     .entry-meta { display: none; }
-    .stats-grid { grid-template-columns: repeat(3, 1fr); }
-    .stat-value { font-size: 18px; }
+    .delete-btn { padding: 8px 12px; font-size: 15px; }
+    .modal { padding: 22px 20px; }
+    .modal input { padding: 12px; font-size: 15px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
