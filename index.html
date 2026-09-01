@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
+    /* Dark theme (default) */
     --bg: #0B121C;
     --surface: #131C29;
     --surface-2: #1A2432;
@@ -22,6 +23,45 @@
     --warn: #EF4444;
     --ok: #4ADE80;
     --amber: #FBBF24;
+    --tint-dudu: rgba(88, 211, 240, 0.12);
+    --tint-dudu-border: rgba(88, 211, 240, 0.4);
+    --tint-ofira: rgba(240, 101, 140, 0.12);
+    --tint-ofira-border: rgba(240, 101, 140, 0.4);
+    --tint-warn: rgba(239, 68, 68, 0.08);
+    --tint-warn-border: rgba(239, 68, 68, 0.25);
+    --gauge-track: #1F2A3A;
+    --gauge-tick-in: #2A3444;
+    --gauge-tick-out: #4A5468;
+    --backdrop: rgba(11, 18, 28, 0.7);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --card-gradient: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  }
+
+  [data-theme="light"] {
+    --bg: #F5F5F0;
+    --surface: #FFFFFF;
+    --surface-2: #FAFAF5;
+    --border: #E5E7EB;
+    --text: #1A1F2E;
+    --text-muted: #6B7280;
+    --text-dim: #9CA3AF;
+    --dudu: #0284C7;
+    --ofira: #DB2777;
+    --warn: #DC2626;
+    --ok: #16A34A;
+    --amber: #D97706;
+    --tint-dudu: rgba(2, 132, 199, 0.1);
+    --tint-dudu-border: rgba(2, 132, 199, 0.35);
+    --tint-ofira: rgba(219, 39, 119, 0.1);
+    --tint-ofira-border: rgba(219, 39, 119, 0.35);
+    --tint-warn: rgba(220, 38, 38, 0.08);
+    --tint-warn-border: rgba(220, 38, 38, 0.25);
+    --gauge-track: #E5E7EB;
+    --gauge-tick-in: #D1D5DB;
+    --gauge-tick-out: #6B7280;
+    --backdrop: rgba(30, 41, 59, 0.5);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+    --card-gradient: var(--surface);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,44 +74,85 @@
     line-height: 1.5;
     -webkit-tap-highlight-color: transparent;
     font-feature-settings: 'tnum';
-    background-image:
-      radial-gradient(ellipse at top, rgba(88, 211, 240, 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom, rgba(240, 101, 140, 0.04) 0%, transparent 50%);
+    transition: background 0.2s, color 0.2s;
   }
 
   .container { max-width: 780px; margin: 0 auto; padding: 28px 24px 40px; }
 
   /* Header */
   header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
   }
-  .brand { display: flex; align-items: baseline; gap: 12px; }
+  .brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .brand h1 { font-size: 20px; font-weight: 500; letter-spacing: 0.02em; }
   .brand-sub { font-size: 12px; color: var(--text-dim); }
-  .sync-badge {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 11px; color: var(--text-muted);
-  }
-  .sync-led {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--text-dim); transition: all 0.3s;
-  }
-  .sync-led.ok { background: var(--ok); box-shadow: 0 0 8px rgba(74, 222, 128, 0.5); }
-  .sync-led.syncing { background: var(--amber); box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); animation: pulse 1s infinite; }
-  .sync-led.error { background: var(--warn); box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .sync-badge { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); }
+  .sync-led { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); transition: all 0.3s; }
+  .sync-led.ok { background: var(--ok); box-shadow: 0 0 8px currentColor; opacity: 0.9; }
+  .sync-led.syncing { background: var(--amber); box-shadow: 0 0 8px currentColor; opacity: 0.9; animation: pulse 1s infinite; }
+  .sync-led.error { background: var(--warn); box-shadow: 0 0 8px currentColor; opacity: 0.9; }
   @keyframes pulse { 50% { opacity: 0.4; } }
+
+  .icon-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-muted); cursor: pointer;
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--text-muted); }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  /* Turn hero banner - prominent, top of main screen */
+  .turn-hero {
+    display: flex; align-items: center; gap: 18px;
+    padding: 22px 24px;
+    border: 2px solid;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    transition: all 0.3s;
+  }
+  .turn-hero.dudu {
+    border-color: var(--tint-dudu-border);
+    background: var(--tint-dudu);
+  }
+  .turn-hero.ofira {
+    border-color: var(--tint-ofira-border);
+    background: var(--tint-ofira);
+  }
+  .turn-hero-icon {
+    width: 48px; height: 48px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+  }
+  .turn-hero.dudu .turn-hero-icon { background: var(--tint-dudu); color: var(--dudu); }
+  .turn-hero.ofira .turn-hero-icon { background: var(--tint-ofira); color: var(--ofira); }
+  [data-theme="light"] .turn-hero-icon { background: white !important; }
+  .turn-hero-icon svg { width: 28px; height: 28px; }
+  .turn-hero-content { flex: 1; min-width: 0; }
+  .turn-hero-label {
+    font-size: 11px; color: var(--text-muted);
+    letter-spacing: 0.08em; font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .turn-hero-name {
+    font-size: 26px; font-weight: 700; color: var(--text);
+    line-height: 1.1; letter-spacing: -0.02em;
+  }
+  .turn-hero-detail {
+    font-size: 13px; color: var(--text-muted);
+    margin-top: 4px;
+  }
 
   /* Error banner */
   .error-banner {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: var(--tint-warn);
+    border: 1px solid var(--tint-warn-border);
     border-radius: 6px; padding: 12px 16px; margin-bottom: 20px;
-    color: #FCA5A5; font-size: 13px; display: none;
+    color: var(--warn); font-size: 13px; display: none;
   }
   .error-banner.show { display: block; }
 
@@ -86,12 +167,9 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Gauges */
-  .gauges {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-    margin-bottom: 24px;
-  }
+  .gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
   .gauge-card {
-    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    background: var(--card-gradient);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 24px 20px 20px;
@@ -100,8 +178,8 @@
     position: relative;
   }
   .gauge-card.turn {
-    border-color: rgba(239, 68, 68, 0.5);
-    box-shadow: 0 0 24px rgba(239, 68, 68, 0.08), inset 0 0 24px rgba(239, 68, 68, 0.04);
+    border-color: var(--tint-warn-border);
+    box-shadow: 0 0 24px var(--tint-warn), inset 0 0 24px var(--tint-warn);
   }
   .card-header {
     display: flex; justify-content: center; align-items: center;
@@ -112,7 +190,7 @@
     position: absolute; top: 18px; inset-inline-end: 18px;
     font-size: 10px; font-weight: 600; color: var(--warn);
     letter-spacing: 0.06em; padding: 2px 8px;
-    border: 1px solid rgba(239, 68, 68, 0.4);
+    border: 1px solid var(--tint-warn-border);
     border-radius: 999px; opacity: 0; transition: opacity 0.3s;
   }
   .gauge-card.turn .turn-tag { opacity: 1; }
@@ -120,19 +198,9 @@
   .gauge-svg { width: 100%; max-width: 220px; height: auto; margin: 8px 0 4px; }
 
   .days-readout { display: flex; align-items: baseline; gap: 6px; margin: 4px 0 6px; }
-  .days-num {
-    font-size: 44px; font-weight: 700; color: var(--text);
-    line-height: 1; letter-spacing: -0.02em;
-  }
+  .days-num { font-size: 44px; font-weight: 700; color: var(--text); line-height: 1; letter-spacing: -0.02em; }
   .days-unit { font-size: 13px; color: var(--text-muted); }
-  .last-line {
-    font-size: 11px; color: var(--text-dim); margin-bottom: 18px;
-    text-align: center; min-height: 15px;
-  }
-  .last-line .meta {
-    color: var(--text-muted); padding-inline-start: 6px;
-    border-inline-start: 1px solid var(--border); margin-inline-start: 6px;
-  }
+  .last-line { font-size: 11px; color: var(--text-dim); margin-bottom: 18px; text-align: center; min-height: 15px; }
 
   .log-btn {
     width: 100%; padding: 12px; background: transparent;
@@ -148,123 +216,64 @@
   .log-btn:active { transform: scale(0.98); }
   .log-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Stats */
-  .stats-section {
+  /* Stats CTA */
+  .stats-cta {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 14px 20px;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: inherit; font-size: 14px; font-weight: 500;
+    cursor: pointer; margin-bottom: 24px;
+    transition: all 0.15s;
   }
-  .stats-head {
-    display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 16px;
-  }
-  .stats-head h2 {
-    font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.05em;
-  }
-  .stats-period { font-size: 11px; color: var(--text-dim); }
-
-  .stats-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-    gap: 10px; margin-bottom: 18px;
-  }
-  .stat-tile {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 10px;
-    text-align: center;
-  }
-  .stat-value {
-    font-size: 22px; font-weight: 600; color: var(--text);
-    line-height: 1.1; letter-spacing: -0.01em;
-  }
-  .stat-label {
-    font-size: 10px; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.05em;
-  }
-
-  .split-block { margin-top: 4px; }
-  .split-bar {
-    height: 6px; background: var(--border); border-radius: 999px;
-    overflow: hidden; display: flex; margin-bottom: 8px;
-  }
-  .split-fill { height: 100%; transition: width 0.6s ease-out; }
-  .split-fill.dudu { background: var(--dudu); }
-  .split-fill.ofira { background: var(--ofira); }
-
-  .split-legend {
-    display: flex; justify-content: space-between;
-    font-size: 12px; color: var(--text-muted);
-    flex-wrap: wrap; gap: 8px;
-  }
-  .split-item { display: flex; align-items: center; gap: 6px; }
-  .split-item .sdot { width: 7px; height: 7px; border-radius: 50%; }
-  .split-item .sdot.dudu { background: var(--dudu); }
-  .split-item .sdot.ofira { background: var(--ofira); }
-  .split-item .sval { color: var(--text); font-weight: 500; }
-
-  .stats-meta {
-    margin-top: 14px; padding-top: 14px;
-    border-top: 1px solid var(--border);
-    font-size: 11px; color: var(--text-dim);
-    display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
-  }
-  .stats-meta span strong { color: var(--text-muted); font-weight: 500; }
-
-  .empty-stats {
-    padding: 8px 0 4px; text-align: center;
-    color: var(--text-dim); font-size: 12px;
-  }
+  .stats-cta:hover { border-color: var(--text-muted); background: var(--surface-2); }
+  .stats-cta svg { width: 18px; height: 18px; color: var(--text-muted); }
+  .stats-cta .arrow { margin-inline-start: auto; color: var(--text-dim); }
 
   /* History */
   .history-head {
     display: flex; justify-content: space-between; align-items: baseline;
     margin-bottom: 14px; padding: 0 2px;
   }
-  .history-head h2 {
-    font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.05em;
-  }
+  .history-head h2 { font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.05em; }
   .history-count { font-size: 11px; color: var(--text-dim); }
 
-  .history {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; overflow: hidden;
-  }
+  .history { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
   .empty { padding: 48px 24px; text-align: center; color: var(--text-dim); font-size: 13px; }
-  .entry {
-    display: grid;
-    grid-template-columns: auto auto 1fr auto auto;
-    align-items: center;
-    padding: 12px 18px; gap: 14px;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
+
+  .entry { padding: 14px 18px; border-bottom: 1px solid var(--border); }
   .entry:last-child { border-bottom: none; }
-  .entry-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .entry-dot.dudu { background: var(--dudu); box-shadow: 0 0 6px rgba(88, 211, 240, 0.4); }
-  .entry-dot.ofira { background: var(--ofira); box-shadow: 0 0 6px rgba(240, 101, 140, 0.4); }
-  .entry-name { color: var(--text); font-weight: 500; min-width: 50px; }
-  .entry-date { color: var(--text-muted); font-size: 12px; }
-  .entry-meta {
-    color: var(--text-muted); font-size: 11px;
-    padding: 2px 8px; background: var(--bg);
-    border: 1px solid var(--border); border-radius: 4px;
-    white-space: nowrap;
-  }
+  .entry-main { display: flex; align-items: center; gap: 12px; }
+  .entry-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .entry-dot.dudu { background: var(--dudu); box-shadow: 0 0 6px currentColor; opacity: 0.9; }
+  .entry-dot.ofira { background: var(--ofira); box-shadow: 0 0 6px currentColor; opacity: 0.9; }
+  .entry-name { color: var(--text); font-weight: 600; font-size: 15px; min-width: 60px; }
+  .entry-date { color: var(--text-muted); font-size: 12px; flex: 1; }
   .delete-btn {
     background: transparent; border: 1px solid transparent;
     color: var(--text-muted); cursor: pointer;
-    padding: 6px 10px; font-size: 13px;
+    padding: 6px 10px; font-size: 14px;
     font-family: inherit; line-height: 1; border-radius: 6px;
     transition: all 0.15s;
   }
-  .delete-btn:hover { color: var(--warn); border-color: rgba(239, 68, 68, 0.3); }
+  .delete-btn:hover { color: var(--warn); border-color: var(--tint-warn-border); }
+  .entry-details {
+    display: flex; gap: 8px; margin-top: 10px;
+    padding-inline-start: 21px; flex-wrap: wrap;
+  }
+  .chip {
+    display: inline-flex; align-items: baseline; gap: 4px;
+    font-size: 12px; color: var(--text-muted);
+    padding: 4px 10px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 999px;
+  }
+  .chip .chip-label { color: var(--text-dim); font-size: 10px; }
+  .chip .chip-value { color: var(--text); font-weight: 500; }
 
   /* Modal */
   .modal-backdrop {
     position: fixed; inset: 0;
-    background: rgba(11, 18, 28, 0.7);
+    background: var(--backdrop);
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     display: none; align-items: center; justify-content: center;
     z-index: 100; padding: 20px;
@@ -275,11 +284,12 @@
     border-radius: 12px; padding: 24px;
     width: 100%; max-width: 440px;
     animation: pop 0.15s ease-out;
+    max-height: calc(100vh - 40px); overflow-y: auto;
+    box-shadow: var(--shadow-lg);
   }
   @keyframes pop { from { transform: translateY(6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .modal h3 { font-size: 16px; font-weight: 500; color: var(--text); }
   .modal-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; margin-top: 2px; }
-
   .modal label {
     display: block; font-size: 11px; color: var(--text-muted);
     margin-bottom: 6px; margin-top: 14px; letter-spacing: 0.04em;
@@ -289,21 +299,16 @@
     width: 100%; padding: 10px 12px;
     border: 1px solid var(--border); border-radius: 6px;
     font-family: inherit; font-size: 13px; direction: rtl;
-    background: var(--bg); color: var(--text); color-scheme: dark;
+    background: var(--bg); color: var(--text);
+    color-scheme: dark;
   }
+  [data-theme="light"] .modal input { color-scheme: light; }
   .modal input:focus { outline: none; border-color: var(--text-muted); }
   .modal input[type="number"] { direction: ltr; text-align: right; }
   .modal input[type="number"]::-webkit-inner-spin-button,
   .modal input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .modal input[type="number"] { -moz-appearance: textfield; }
-
-  .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .modal-row label { margin-top: 14px; }
-
-  .modal-hint {
-    font-size: 11px; color: var(--text-dim);
-    margin-top: 12px; text-align: center;
-  }
+  .modal-hint { font-size: 11px; color: var(--text-dim); margin-top: 12px; text-align: center; }
   .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
   .btn-primary, .btn-secondary {
     padding: 10px 20px; border-radius: 6px;
@@ -311,7 +316,7 @@
     cursor: pointer; border: 1px solid transparent;
   }
   .btn-primary { background: var(--text); color: var(--bg); }
-  .btn-primary:hover { background: white; }
+  .btn-primary:hover { opacity: 0.9; }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-secondary { background: transparent; color: var(--text-muted); border-color: var(--border); }
   .btn-secondary:hover { color: var(--text); border-color: var(--text-muted); }
@@ -320,34 +325,109 @@
   .toast {
     position: fixed; bottom: 24px; left: 50%;
     transform: translateX(-50%) translateY(120px);
-    background: var(--surface-2); border: 1px solid var(--border);
+    background: var(--surface); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px 8px 12px 20px;
     display: flex; align-items: center; gap: 12px;
     font-size: 13px; color: var(--text);
     z-index: 200; opacity: 0;
     transition: transform 0.3s ease-out, opacity 0.3s;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-lg);
     max-width: 90vw;
   }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-  .toast-icon {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--ok); box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
-  }
+  .toast-icon { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px currentColor; opacity: 0.9; }
   .toast-undo {
-    background: none; border: none;
-    color: var(--dudu); cursor: pointer;
+    background: none; border: none; color: var(--dudu); cursor: pointer;
     font-family: inherit; font-size: 13px; font-weight: 600;
     padding: 6px 12px; margin-inline-start: 4px;
   }
-  .toast-undo:hover { color: white; }
+  .toast-undo:hover { opacity: 0.8; }
+
+  /* Stats screen */
+  .stats-screen { display: none; }
+  .stats-screen.show { display: block; }
+  .stats-screen header { border-bottom: 1px solid var(--border); }
+
+  .stats-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .stats-section h3 {
+    font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em;
+    font-weight: 500; margin-bottom: 16px;
+  }
+  .stats-section h3 .period { color: var(--text-dim); font-weight: 400; margin-inline-start: 8px; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
+  .stat-tile {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 10px;
+    text-align: center;
+  }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1.1; letter-spacing: -0.01em; }
+  .stat-label { font-size: 10px; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.05em; }
+
+  .split-bar { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; display: flex; margin-bottom: 10px; }
+  .split-fill { height: 100%; transition: width 0.6s ease-out; }
+  .split-fill.dudu { background: var(--dudu); }
+  .split-fill.ofira { background: var(--ofira); }
+  .split-legend { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; gap: 8px; }
+  .split-item { display: flex; align-items: center; gap: 6px; }
+  .split-item .sdot { width: 7px; height: 7px; border-radius: 50%; }
+  .split-item .sdot.dudu { background: var(--dudu); }
+  .split-item .sdot.ofira { background: var(--ofira); }
+  .split-item .sval { color: var(--text); font-weight: 500; }
+
+  .consumption-display {
+    display: flex; justify-content: space-around; text-align: center;
+    padding: 8px 0; gap: 20px;
+  }
+  .cons-item .cons-num {
+    font-size: 32px; font-weight: 700; color: var(--text);
+    line-height: 1; letter-spacing: -0.02em;
+  }
+  .cons-item .cons-unit { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+  .cons-note { text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+  .person-stat { padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .person-stat:last-child { border-bottom: none; padding-bottom: 0; }
+  .person-stat:first-child { padding-top: 0; }
+  .person-stat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .person-stat-head .name { font-size: 16px; font-weight: 600; color: var(--text); }
+  .person-stat-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .person-stat-head .dot.dudu { background: var(--dudu); box-shadow: 0 0 6px currentColor; opacity: 0.9; }
+  .person-stat-head .dot.ofira { background: var(--ofira); box-shadow: 0 0 6px currentColor; opacity: 0.9; }
+  .person-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
+  .person-stat-item { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 8px; text-align: center; }
+  .person-stat-item .v { font-size: 15px; font-weight: 600; color: var(--text); }
+  .person-stat-item .l { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  .averages-list { display: flex; flex-direction: column; }
+  .avg-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .avg-row:last-child { border-bottom: none; }
+  .avg-row .label { color: var(--text-muted); }
+  .avg-row .value { color: var(--text); font-weight: 600; font-size: 15px; }
+
+  .empty-section { text-align: center; color: var(--text-dim); font-size: 12px; padding: 12px 0; }
 
   @media (max-width: 520px) {
     body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
     .container { padding: 20px 16px calc(32px + env(safe-area-inset-bottom)); }
-    header { margin-bottom: 24px; padding-bottom: 16px; }
+    header { margin-bottom: 20px; padding-bottom: 16px; }
     .brand h1 { font-size: 22px; }
     .brand-sub { font-size: 13px; }
+    .turn-hero { padding: 20px; gap: 14px; }
+    .turn-hero-icon { width: 44px; height: 44px; }
+    .turn-hero-icon svg { width: 26px; height: 26px; }
+    .turn-hero-name { font-size: 24px; }
     .gauges { grid-template-columns: 1fr; gap: 14px; }
     .gauge-card { padding: 22px 20px 20px; }
     .person-name { font-size: 26px; }
@@ -356,16 +436,16 @@
     .last-line { font-size: 12px; }
     .gauge-svg { max-width: 300px; }
     .log-btn { padding: 14px; font-size: 15px; }
-    .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .stat-value { font-size: 20px; }
-    .stat-tile { padding: 14px 6px; }
-    .entry { grid-template-columns: auto auto 1fr auto; gap: 10px; padding: 14px 14px; }
-    .entry-name { font-size: 14px; }
-    .entry-date { font-size: 12px; }
-    .entry-meta { display: none; }
+    .stats-cta { padding: 16px; font-size: 15px; }
+    .entry { padding: 14px 14px; }
+    .entry-name { font-size: 16px; }
+    .entry-date { font-size: 13px; }
     .delete-btn { padding: 8px 12px; font-size: 15px; }
+    .chip { font-size: 12px; padding: 5px 12px; }
     .modal { padding: 22px 20px; }
     .modal input { padding: 12px; font-size: 15px; }
+    .stat-value { font-size: 20px; }
+    .cons-item .cons-num { font-size: 28px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -374,15 +454,22 @@
 </style>
 </head>
 <body>
-<div class="container">
+
+<!-- Main screen -->
+<div class="container" id="mainScreen">
   <header>
     <div class="brand">
       <h1>מעקב תדלוק</h1>
       <span class="brand-sub">דודו · אופירה</span>
     </div>
-    <div class="sync-badge">
-      <span id="syncText"></span>
-      <span class="sync-led" id="syncLed"></span>
+    <div class="header-right">
+      <button class="icon-btn" id="themeToggle" onclick="toggleTheme()" title="החלף מצב תצוגה">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </button>
+      <div class="sync-badge">
+        <span id="syncText"></span>
+        <span class="sync-led" id="syncLed"></span>
+      </div>
     </div>
   </header>
 
@@ -394,8 +481,18 @@
   </div>
 
   <div id="appContent" style="display:none;">
+    <div id="turnHeroWrap"></div>
     <div class="gauges" id="gauges"></div>
-    <div id="statsWrap"></div>
+
+    <button class="stats-cta" onclick="showStats()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      <span>סטטיסטיקה וסיכומים</span>
+      <span class="arrow">‹</span>
+    </button>
 
     <div class="history-head">
       <h2>היסטוריה</h2>
@@ -405,6 +502,22 @@
   </div>
 </div>
 
+<!-- Stats screen -->
+<div class="container stats-screen" id="statsScreen">
+  <header>
+    <div class="brand">
+      <button class="icon-btn" onclick="hideStats()" title="חזור">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 6l6 6-6 6"/>
+        </svg>
+      </button>
+      <h1 style="margin-inline-start: 4px;">סטטיסטיקה</h1>
+    </div>
+  </header>
+  <div id="statsBody"></div>
+</div>
+
+<!-- Log modal -->
 <div class="modal-backdrop" id="modal">
   <div class="modal">
     <h3 id="modalTitle"></h3>
@@ -431,6 +544,7 @@
   </div>
 </div>
 
+<!-- Toast -->
 <div class="toast" id="toast">
   <span class="toast-icon"></span>
   <span id="toastMsg"></span>
@@ -441,9 +555,36 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbzgf5eya_3A7Po3FALKavEujUxpebOiF7sM3f8BNJp7auQwxZj1fONWzumvV6hEr3LM/exec';
 const NAMES = { dudu: 'דודו', ofira: 'אופירה' };
 const FULL_DAYS = 14;
+const THEME_KEY = 'fuel-tracker-theme';
+
+const SUN_SVG = '<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/>';
+const MOON_SVG = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const PUMP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="15" y2="22"/><line x1="4" y1="9" x2="14" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a1 1 0 0 0-.29-.71L20 8"/></svg>';
 
 let entries = [];
 let pendingPerson = null;
+
+// === Theme ===
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('themeIcon').innerHTML = MOON_SVG;
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('themeIcon').innerHTML = SUN_SVG;
+  }
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
+  try { localStorage.setItem(THEME_KEY, next); } catch {}
+  applyTheme(next);
+}
+(function initTheme() {
+  let saved = 'dark';
+  try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch {}
+  applyTheme(saved);
+})();
 
 // === API ===
 async function api(payload) {
@@ -458,20 +599,17 @@ async function apiList() { const d = await api(null); return d.entries || []; }
 async function apiAdd(entry) { const d = await api({ action: 'add', entry }); if (!d.ok) throw new Error(d.error || 'שגיאה'); }
 async function apiDelete(id) { const d = await api({ action: 'delete', id }); if (!d.ok) throw new Error(d.error || 'שגיאה'); }
 
-// === Sync UI ===
+// === UI helpers ===
 function setSync(state, msg) {
   document.getElementById('syncLed').className = 'sync-led ' + state;
   document.getElementById('syncText').textContent = msg || '';
 }
 function showError(msg) {
   const b = document.getElementById('errorBanner');
-  b.textContent = msg;
-  b.classList.add('show');
+  b.textContent = msg; b.classList.add('show');
   clearTimeout(showError._t);
   showError._t = setTimeout(() => b.classList.remove('show'), 6000);
 }
-
-// === Toast ===
 function showToast(msg, undoAction) {
   const toast = document.getElementById('toast');
   const undo = document.getElementById('toastUndo');
@@ -479,9 +617,7 @@ function showToast(msg, undoAction) {
   if (undoAction) {
     undo.style.display = 'inline-block';
     undo.onclick = () => { undoAction(); hideToast(); };
-  } else {
-    undo.style.display = 'none';
-  }
+  } else undo.style.display = 'none';
   toast.classList.add('show');
   clearTimeout(showToast._t);
   showToast._t = setTimeout(hideToast, 6000);
@@ -527,16 +663,16 @@ function formatDate(iso) {
   return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short' }) +
     ' · ' + d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
 }
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function formatMoney(v) {
+  return '₪' + (v % 1 === 0 ? v.toLocaleString('he-IL') : v.toFixed(2));
 }
-function formatMeta(e) {
-  const parts = [];
-  if (e.cost) parts.push('₪' + (e.cost % 1 === 0 ? e.cost : e.cost.toFixed(2)));
-  if (e.liters) parts.push(e.liters + 'L');
-  if (e.km) parts.push(e.km.toLocaleString('he-IL') + ' ק"מ');
-  if (parts.length === 0 && e.note) return escapeHtml(e.note);
-  return parts.join(' · ');
+
+function turnPersonId() {
+  const lasts = ['dudu','ofira'].map(p => ({ p, entry: lastEntryFor(p) }));
+  const withNo = lasts.filter(l => !l.entry);
+  if (withNo.length === 1) return withNo[0].p;
+  if (withNo.length === 0) return [...lasts].sort((a,b) => new Date(a.entry.timestamp) - new Date(b.entry.timestamp))[0].p;
+  return null;
 }
 
 // === Gauge SVG ===
@@ -555,23 +691,24 @@ function gaugeSvg(person, days, isTurn) {
     const x2 = cx + r2 * Math.cos(a - Math.PI / 2);
     const y2 = cy + r2 * Math.sin(a - Math.PI / 2);
     const isEnd = (i === 0 || i === 6);
-    ticks.push(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${isEnd ? '#4A5468' : '#2A3444'}" stroke-width="${isEnd ? 2 : 1}" stroke-linecap="round"/>`);
+    const stroke = isEnd ? 'var(--gauge-tick-out)' : 'var(--gauge-tick-in)';
+    ticks.push(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${stroke}" stroke-width="${isEnd ? 2 : 1}" stroke-linecap="round"/>`);
   }
 
   return `
     <svg class="gauge-svg" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
         <linearGradient id="${gid}" x1="1" y1="0" x2="0" y2="0">
-          <stop offset="0" stop-color="#EF4444"/>
-          <stop offset="0.5" stop-color="#FBBF24"/>
-          <stop offset="1" stop-color="#4ADE80"/>
+          <stop offset="0" stop-color="var(--warn)"/>
+          <stop offset="0.5" stop-color="var(--amber)"/>
+          <stop offset="1" stop-color="var(--ok)"/>
         </linearGradient>
       </defs>
-      <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="#1F2A3A" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="var(--gauge-track)" stroke-width="10" fill="none" stroke-linecap="round"/>
       <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="url(#${gid})" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.72"/>
       ${ticks.join('')}
-      <text x="16" y="118" fill="#4ADE80" font-size="10" font-weight="600" font-family="Rubik">F</text>
-      <text x="178" y="118" fill="${isTurn ? '#EF4444' : '#4A5468'}" font-size="10" font-weight="600" font-family="Rubik">E</text>
+      <text x="16" y="118" fill="var(--ok)" font-size="10" font-weight="600" font-family="Rubik">F</text>
+      <text x="178" y="118" fill="${isTurn ? 'var(--warn)' : 'var(--gauge-tick-out)'}" font-size="10" font-weight="600" font-family="Rubik">E</text>
       <g style="transform: rotate(${angle}deg); transform-origin: 100px 100px; transition: transform 1.1s cubic-bezier(.34,1.3,.64,1);">
         <line x1="100" y1="100" x2="100" y2="30" stroke="${needleColor}" stroke-width="2.5" stroke-linecap="round"/>
         <circle cx="100" cy="30" r="3" fill="${needleColor}"/>
@@ -582,164 +719,43 @@ function gaugeSvg(person, days, isTurn) {
   `;
 }
 
-// === Stats ===
-function computeStats() {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const thisMonth = entries.filter(e => new Date(e.timestamp) >= monthStart);
-  const monthLabel = now.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+// === Render main ===
+function render() {
+  const persons = ['dudu', 'ofira'];
+  const turn = turnPersonId();
 
-  if (thisMonth.length === 0) {
-    return { hasData: false, monthLabel };
-  }
+  // Turn hero at top
+  const heroWrap = document.getElementById('turnHeroWrap');
+  if (turn) {
+    const last = lastEntryFor(turn);
+    const days = last ? daysSince(last.timestamp) : null;
+    let detail;
+    if (!last) detail = 'עדיין לא תודלק';
+    else if (days === 0) detail = 'תודלק היום';
+    else if (days === 1) detail = 'אתמול';
+    else if (days === 2) detail = 'לפני יומיים';
+    else detail = `לפני ${days} ימים`;
 
-  const sum = (arr, key) => arr.reduce((s, e) => s + (e[key] || 0), 0);
-  const totalCost = sum(thisMonth, 'cost');
-  const totalLiters = sum(thisMonth, 'liters');
-  const totalCount = thisMonth.length;
-
-  const perPerson = {
-    dudu: thisMonth.filter(e => e.person === 'dudu'),
-    ofira: thisMonth.filter(e => e.person === 'ofira')
-  };
-
-  const hasCost = totalCost > 0;
-  const hasLiters = totalLiters > 0;
-
-  const costByPerson = {
-    dudu: sum(perPerson.dudu, 'cost'),
-    ofira: sum(perPerson.ofira, 'cost')
-  };
-  const litersByPerson = {
-    dudu: sum(perPerson.dudu, 'liters'),
-    ofira: sum(perPerson.ofira, 'liters')
-  };
-
-  // Averages (all time, based on entries that have the relevant fields)
-  const withBoth = entries.filter(e => e.cost && e.liters);
-  const avgCostPerL = withBoth.length > 0
-    ? (withBoth.reduce((s, e) => s + e.cost, 0) / withBoth.reduce((s, e) => s + e.liters, 0))
-    : null;
-  const withLiters = entries.filter(e => e.liters);
-  const avgLitersPerFill = withLiters.length > 0
-    ? (withLiters.reduce((s, e) => s + e.liters, 0) / withLiters.length)
-    : null;
-
-  // Km between fills (based on all-time km readings, chronological)
-  const kmEntries = entries.filter(e => e.km).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  let avgKmPerFill = null;
-  if (kmEntries.length >= 2) {
-    const diff = kmEntries[kmEntries.length - 1].km - kmEntries[0].km;
-    if (diff > 0) avgKmPerFill = Math.round(diff / (kmEntries.length - 1));
-  }
-
-  return {
-    hasData: true, monthLabel,
-    totalCost, totalLiters, totalCount,
-    hasCost, hasLiters,
-    costByPerson, litersByPerson,
-    countByPerson: { dudu: perPerson.dudu.length, ofira: perPerson.ofira.length },
-    avgCostPerL, avgLitersPerFill, avgKmPerFill
-  };
-}
-
-function renderStats() {
-  const s = computeStats();
-  const wrap = document.getElementById('statsWrap');
-
-  if (!s.hasData) {
-    wrap.innerHTML = `
-      <div class="stats-section">
-        <div class="stats-head">
-          <h2>סיכום החודש</h2>
-          <span class="stats-period">${s.monthLabel}</span>
+    heroWrap.innerHTML = `
+      <div class="turn-hero ${turn}">
+        <div class="turn-hero-icon">${PUMP_SVG}</div>
+        <div class="turn-hero-content">
+          <div class="turn-hero-label">התור עכשיו</div>
+          <div class="turn-hero-name">${NAMES[turn]}</div>
+          <div class="turn-hero-detail">${detail}</div>
         </div>
-        <div class="empty-stats">אין תדלוקים החודש</div>
       </div>
     `;
-    return;
-  }
-
-  const tiles = [];
-  if (s.hasCost) tiles.push({ v: '₪' + Math.round(s.totalCost).toLocaleString('he-IL'), l: 'עלות' });
-  if (s.hasLiters) tiles.push({ v: (s.totalLiters % 1 === 0 ? s.totalLiters : s.totalLiters.toFixed(1)) + 'L', l: 'ליטרים' });
-  tiles.push({ v: s.totalCount, l: s.totalCount === 1 ? 'תדלוק' : 'תדלוקים' });
-
-  // Split: prefer cost, then liters, then count
-  let splitLabel, splitTotal, splitDudu, splitOfira, splitFmt;
-  if (s.hasCost) {
-    splitTotal = s.totalCost;
-    splitDudu = s.costByPerson.dudu;
-    splitOfira = s.costByPerson.ofira;
-    splitFmt = v => '₪' + Math.round(v).toLocaleString('he-IL');
-  } else if (s.hasLiters) {
-    splitTotal = s.totalLiters;
-    splitDudu = s.litersByPerson.dudu;
-    splitOfira = s.litersByPerson.ofira;
-    splitFmt = v => (v % 1 === 0 ? v : v.toFixed(1)) + 'L';
   } else {
-    splitTotal = s.totalCount;
-    splitDudu = s.countByPerson.dudu;
-    splitOfira = s.countByPerson.ofira;
-    splitFmt = v => v + '';
+    heroWrap.innerHTML = '';
   }
 
-  const pctDudu = splitTotal > 0 ? (splitDudu / splitTotal) * 100 : 0;
-  const pctOfira = splitTotal > 0 ? (splitOfira / splitTotal) * 100 : 0;
-
-  // Meta averages
-  const metaParts = [];
-  if (s.avgCostPerL) metaParts.push(`<span><strong>₪${s.avgCostPerL.toFixed(2)}</strong> לליטר</span>`);
-  if (s.avgLitersPerFill) metaParts.push(`<span><strong>${s.avgLitersPerFill.toFixed(1)}L</strong> לתדלוק</span>`);
-  if (s.avgKmPerFill) metaParts.push(`<span><strong>${s.avgKmPerFill.toLocaleString('he-IL')}</strong> ק"מ בין תדלוקים</span>`);
-
-  wrap.innerHTML = `
-    <div class="stats-section">
-      <div class="stats-head">
-        <h2>סיכום החודש</h2>
-        <span class="stats-period">${s.monthLabel}</span>
-      </div>
-      <div class="stats-grid">
-        ${tiles.map(t => `<div class="stat-tile"><div class="stat-value">${t.v}</div><div class="stat-label">${t.l}</div></div>`).join('')}
-      </div>
-      <div class="split-block">
-        <div class="split-bar">
-          <div class="split-fill dudu" style="width: ${pctDudu}%"></div>
-          <div class="split-fill ofira" style="width: ${pctOfira}%"></div>
-        </div>
-        <div class="split-legend">
-          <span class="split-item">
-            <span class="sdot dudu"></span>
-            דודו <span class="sval">${splitFmt(splitDudu)}</span>
-          </span>
-          <span class="split-item">
-            <span class="sdot ofira"></span>
-            אופירה <span class="sval">${splitFmt(splitOfira)}</span>
-          </span>
-        </div>
-      </div>
-      ${metaParts.length ? `<div class="stats-meta">${metaParts.join('')}</div>` : ''}
-    </div>
-  `;
-}
-
-// === Render ===
-function render() {
+  // Gauges
   const gauges = document.getElementById('gauges');
-  const persons = ['dudu', 'ofira'];
-  const lasts = persons.map(p => ({ p, entry: lastEntryFor(p) }));
-
-  let turnPerson = null;
-  const withNo = lasts.filter(l => !l.entry);
-  if (withNo.length === 1) turnPerson = withNo[0].p;
-  else if (withNo.length === 0)
-    turnPerson = [...lasts].sort((a, b) => new Date(a.entry.timestamp) - new Date(b.entry.timestamp))[0].p;
-
   gauges.innerHTML = persons.map(p => {
     const last = lastEntryFor(p);
     const days = last ? daysSince(last.timestamp) : null;
-    const isTurn = turnPerson === p;
-    const meta = last ? formatMeta(last) : '';
+    const isTurn = turn === p;
     return `
       <div class="gauge-card ${isTurn ? 'turn' : ''}" data-person="${p}">
         <div class="card-header">
@@ -752,7 +768,7 @@ function render() {
                <span class="days-num">${days}</span>
                <span class="days-unit">${daysLabel(days)}</span>
              </div>
-             <div class="last-line">${formatDate(last.timestamp)}${meta ? `<span class="meta">${meta}</span>` : ''}</div>`
+             <div class="last-line">${formatDate(last.timestamp)}</div>`
           : `<div class="days-readout">
                <span class="days-num">—</span>
                <span class="days-unit">טרם תודלק</span>
@@ -764,8 +780,7 @@ function render() {
     `;
   }).join('');
 
-  renderStats();
-
+  // History
   const history = document.getElementById('history');
   const count = document.getElementById('historyCount');
   count.textContent = entries.length
@@ -779,17 +794,233 @@ function render() {
 
   const sorted = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   history.innerHTML = sorted.map(e => {
-    const meta = formatMeta(e);
+    const chips = [];
+    if (e.cost) chips.push(`<span class="chip"><span class="chip-value">${formatMoney(e.cost)}</span></span>`);
+    if (e.liters) chips.push(`<span class="chip"><span class="chip-value">${e.liters}</span><span class="chip-label">ליטר</span></span>`);
+    if (e.km) chips.push(`<span class="chip"><span class="chip-value">${e.km.toLocaleString('he-IL')}</span><span class="chip-label">ק"מ</span></span>`);
     return `
       <div class="entry">
-        <span class="entry-dot ${e.person}"></span>
-        <span class="entry-name">${NAMES[e.person]}</span>
-        <span class="entry-date">${formatDate(e.timestamp)}</span>
-        ${meta ? `<span class="entry-meta">${meta}</span>` : '<span></span>'}
-        <button class="delete-btn" onclick="deleteEntry('${e.id}')" title="מחק">✕</button>
+        <div class="entry-main">
+          <span class="entry-dot ${e.person}"></span>
+          <span class="entry-name">${NAMES[e.person]}</span>
+          <span class="entry-date">${formatDate(e.timestamp)}</span>
+          <button class="delete-btn" onclick="deleteEntry('${e.id}')" title="מחק">✕</button>
+        </div>
+        ${chips.length ? `<div class="entry-details">${chips.join('')}</div>` : ''}
       </div>
     `;
   }).join('');
+}
+
+// === Stats ===
+function computeStats() {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thisMonth = entries.filter(e => new Date(e.timestamp) >= monthStart);
+  const monthLabel = now.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+
+  const sum = (arr, key) => arr.reduce((s, e) => s + (e[key] || 0), 0);
+
+  const withKm = entries.filter(e => e.km).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const consumptions = [];
+  for (let i = 1; i < withKm.length; i++) {
+    const prev = withKm[i-1], curr = withKm[i];
+    if (!curr.liters) continue;
+    const dist = curr.km - prev.km;
+    if (dist <= 0) continue;
+    const c = (curr.liters / dist) * 100;
+    if (c > 2 && c < 30) consumptions.push(c);
+  }
+  let consumption = null;
+  if (consumptions.length > 0) {
+    const avg = consumptions.reduce((s, x) => s + x, 0) / consumptions.length;
+    consumption = { lPer100km: avg, kmPerL: 100 / avg, samples: consumptions.length };
+  }
+
+  const perPerson = {
+    dudu: { month: thisMonth.filter(e => e.person === 'dudu'), all: entries.filter(e => e.person === 'dudu') },
+    ofira: { month: thisMonth.filter(e => e.person === 'ofira'), all: entries.filter(e => e.person === 'ofira') }
+  };
+  const buildPersonStats = (p) => ({
+    count: p.all.length,
+    monthCount: p.month.length,
+    monthCost: sum(p.month, 'cost'),
+    monthLiters: sum(p.month, 'liters'),
+    totalCost: sum(p.all, 'cost'),
+    totalLiters: sum(p.all, 'liters')
+  });
+
+  const withBoth = entries.filter(e => e.cost && e.liters);
+  const withLiters = entries.filter(e => e.liters);
+  const avgCostPerL = withBoth.length > 0
+    ? (withBoth.reduce((s, e) => s + e.cost, 0) / withBoth.reduce((s, e) => s + e.liters, 0)) : null;
+  const avgLitersPerFill = withLiters.length > 0
+    ? (withLiters.reduce((s, e) => s + e.liters, 0) / withLiters.length) : null;
+  let avgKmPerFill = null;
+  if (withKm.length >= 2) {
+    const diff = withKm[withKm.length-1].km - withKm[0].km;
+    if (diff > 0) avgKmPerFill = Math.round(diff / (withKm.length - 1));
+  }
+
+  return {
+    monthLabel,
+    hasMonthData: thisMonth.length > 0,
+    monthCount: thisMonth.length,
+    monthCost: sum(thisMonth, 'cost'),
+    monthLiters: sum(thisMonth, 'liters'),
+    totalCount: entries.length,
+    totalCost: sum(entries, 'cost'),
+    totalLiters: sum(entries, 'liters'),
+    persons: { dudu: buildPersonStats(perPerson.dudu), ofira: buildPersonStats(perPerson.ofira) },
+    consumption, avgCostPerL, avgLitersPerFill, avgKmPerFill
+  };
+}
+
+function renderStats() {
+  const s = computeStats();
+  const body = document.getElementById('statsBody');
+  const parts = [];
+
+  const monthTiles = [];
+  if (s.monthCost > 0) monthTiles.push({ v: formatMoney(Math.round(s.monthCost)), l: 'עלות' });
+  if (s.monthLiters > 0) monthTiles.push({ v: (s.monthLiters % 1 === 0 ? s.monthLiters : s.monthLiters.toFixed(1)) + 'L', l: 'ליטרים' });
+  monthTiles.push({ v: s.monthCount, l: s.monthCount === 1 ? 'תדלוק' : 'תדלוקים' });
+
+  let splitDudu = 0, splitOfira = 0, splitTotal = 0, splitFmt = v => String(v);
+  if (s.monthCost > 0) {
+    splitDudu = s.persons.dudu.monthCost; splitOfira = s.persons.ofira.monthCost;
+    splitTotal = s.monthCost; splitFmt = v => formatMoney(Math.round(v));
+  } else if (s.monthLiters > 0) {
+    splitDudu = s.persons.dudu.monthLiters; splitOfira = s.persons.ofira.monthLiters;
+    splitTotal = s.monthLiters; splitFmt = v => (v % 1 === 0 ? v : v.toFixed(1)) + 'L';
+  } else {
+    splitDudu = s.persons.dudu.monthCount; splitOfira = s.persons.ofira.monthCount;
+    splitTotal = s.monthCount;
+  }
+  const pctD = splitTotal ? (splitDudu / splitTotal) * 100 : 0;
+  const pctO = splitTotal ? (splitOfira / splitTotal) * 100 : 0;
+
+  if (s.hasMonthData) {
+    parts.push(`
+      <div class="stats-section">
+        <h3>סיכום החודש <span class="period">${s.monthLabel}</span></h3>
+        <div class="stats-grid">
+          ${monthTiles.map(t => `<div class="stat-tile"><div class="stat-value">${t.v}</div><div class="stat-label">${t.l}</div></div>`).join('')}
+        </div>
+        <div style="margin-top: 18px;">
+          <div class="split-bar">
+            <div class="split-fill dudu" style="width: ${pctD}%"></div>
+            <div class="split-fill ofira" style="width: ${pctO}%"></div>
+          </div>
+          <div class="split-legend">
+            <span class="split-item"><span class="sdot dudu"></span>דודו <span class="sval">${splitFmt(splitDudu)}</span></span>
+            <span class="split-item"><span class="sdot ofira"></span>אופירה <span class="sval">${splitFmt(splitOfira)}</span></span>
+          </div>
+        </div>
+      </div>
+    `);
+  } else {
+    parts.push(`
+      <div class="stats-section">
+        <h3>סיכום החודש <span class="period">${s.monthLabel}</span></h3>
+        <div class="empty-section">אין תדלוקים החודש</div>
+      </div>
+    `);
+  }
+
+  parts.push(`
+    <div class="stats-section">
+      <h3>צריכת דלק</h3>
+      ${s.consumption ? `
+        <div class="consumption-display">
+          <div class="cons-item">
+            <div class="cons-num">${s.consumption.lPer100km.toFixed(1)}</div>
+            <div class="cons-unit">ליטרים ל-100 ק"מ</div>
+          </div>
+          <div class="cons-item">
+            <div class="cons-num">${s.consumption.kmPerL.toFixed(1)}</div>
+            <div class="cons-unit">ק"מ לליטר</div>
+          </div>
+        </div>
+        <div class="cons-note">מבוסס על ${s.consumption.samples} מדידות</div>
+      ` : `
+        <div class="empty-section">
+          נדרשים לפחות שני תדלוקים עם קילומטראז' וליטרים.<br>
+          מלאו את שני השדות בכל תדלוק לחישוב.
+        </div>
+      `}
+    </div>
+  `);
+
+  const personSection = ['dudu', 'ofira'].map(p => {
+    const ps = s.persons[p];
+    const items = [];
+    items.push({ v: ps.count, l: ps.count === 1 ? 'תדלוק' : 'תדלוקים' });
+    if (ps.totalCost > 0) items.push({ v: formatMoney(Math.round(ps.totalCost)), l: 'סה"כ' });
+    if (ps.totalLiters > 0) items.push({ v: (ps.totalLiters % 1 === 0 ? ps.totalLiters : ps.totalLiters.toFixed(1)) + 'L', l: 'ליטרים' });
+    if (ps.monthCost > 0) items.push({ v: formatMoney(Math.round(ps.monthCost)), l: 'החודש' });
+    return `
+      <div class="person-stat">
+        <div class="person-stat-head">
+          <span class="dot ${p}"></span>
+          <span class="name">${NAMES[p]}</span>
+        </div>
+        ${items.length > 0 ? `
+          <div class="person-stat-grid">
+            ${items.map(it => `<div class="person-stat-item"><div class="v">${it.v}</div><div class="l">${it.l}</div></div>`).join('')}
+          </div>
+        ` : '<div class="empty-section">אין נתונים</div>'}
+      </div>
+    `;
+  }).join('');
+  parts.push(`
+    <div class="stats-section">
+      <h3>לפי אדם</h3>
+      ${personSection}
+    </div>
+  `);
+
+  const avgRows = [];
+  if (s.avgCostPerL) avgRows.push({ l: 'מחיר ממוצע לליטר', v: '₪' + s.avgCostPerL.toFixed(2) });
+  if (s.avgLitersPerFill) avgRows.push({ l: 'ליטרים ממוצע לתדלוק', v: s.avgLitersPerFill.toFixed(1) + 'L' });
+  if (s.avgKmPerFill) avgRows.push({ l: 'ק"מ ממוצע בין תדלוקים', v: s.avgKmPerFill.toLocaleString('he-IL') });
+  if (avgRows.length > 0) {
+    parts.push(`
+      <div class="stats-section">
+        <h3>ממוצעים</h3>
+        <div class="averages-list">
+          ${avgRows.map(r => `<div class="avg-row"><span class="label">${r.l}</span><span class="value">${r.v}</span></div>`).join('')}
+        </div>
+      </div>
+    `);
+  }
+
+  const totalTiles = [];
+  totalTiles.push({ v: s.totalCount, l: s.totalCount === 1 ? 'תדלוק' : 'תדלוקים' });
+  if (s.totalCost > 0) totalTiles.push({ v: formatMoney(Math.round(s.totalCost)), l: 'סה"כ עלות' });
+  if (s.totalLiters > 0) totalTiles.push({ v: Math.round(s.totalLiters) + 'L', l: 'סה"כ ליטרים' });
+  parts.push(`
+    <div class="stats-section">
+      <h3>מאז ההתחלה</h3>
+      <div class="stats-grid">
+        ${totalTiles.map(t => `<div class="stat-tile"><div class="stat-value">${t.v}</div><div class="stat-label">${t.l}</div></div>`).join('')}
+      </div>
+    </div>
+  `);
+
+  body.innerHTML = parts.join('');
+}
+
+function showStats() {
+  renderStats();
+  document.getElementById('mainScreen').style.display = 'none';
+  document.getElementById('statsScreen').classList.add('show');
+  window.scrollTo(0, 0);
+}
+function hideStats() {
+  document.getElementById('statsScreen').classList.remove('show');
+  document.getElementById('mainScreen').style.display = 'block';
+  window.scrollTo(0, 0);
 }
 
 // === Actions ===
@@ -810,19 +1041,16 @@ function closeModal() {
   document.getElementById('modal').classList.remove('open');
   pendingPerson = null;
 }
-
 function parseNum(id) {
   const v = document.getElementById(id).value.trim();
   if (!v) return null;
   const n = Number(v);
   return isNaN(n) ? null : n;
 }
-
 async function confirmLog() {
   if (!pendingPerson) return;
   const dateVal = document.getElementById('modalDate').value;
   if (!dateVal) return;
-
   const entry = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
     person: pendingPerson,
@@ -831,31 +1059,25 @@ async function confirmLog() {
     liters: parseNum('modalLiters'),
     km: parseNum('modalKm')
   };
-
   const btn = document.getElementById('confirmBtn');
-  btn.disabled = true;
-  btn.textContent = 'שומר…';
+  btn.disabled = true; btn.textContent = 'שומר…';
   setSync('syncing', 'שומר');
-
   try {
     await apiAdd(entry);
     entries.push(entry);
     setSync('ok', 'מסונכרן');
-    closeModal();
-    render();
+    closeModal(); render();
     showToast('נשמר', async () => {
       entries = entries.filter(x => x.id !== entry.id);
       render();
-      try { await apiDelete(entry.id); } catch (err) { showError('בוטל מקומית, מחיקה בשרת נכשלה'); }
+      try { await apiDelete(entry.id); } catch { showError('בוטל מקומית, מחיקה בשרת נכשלה'); }
     });
   } catch (e) {
     setSync('error', 'שגיאה');
     showError('לא הצלחתי לשמור: ' + e.message);
-    btn.disabled = false;
-    btn.textContent = 'שמור';
+    btn.disabled = false; btn.textContent = 'שמור';
   }
 }
-
 async function deleteEntry(id) {
   if (!confirm('למחוק את הרישום?')) return;
   setSync('syncing', 'מוחק');
