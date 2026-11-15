@@ -35,6 +35,7 @@
     --backdrop: rgba(11, 18, 28, 0.7);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
     --card-gradient: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    --chart-line: #A78BFA;
   }
 
   [data-theme="light"] {
@@ -62,6 +63,7 @@
     --backdrop: rgba(30, 41, 59, 0.5);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
     --card-gradient: var(--surface);
+    --chart-line: #7C3AED;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -418,6 +420,39 @@
 
   .empty-section { text-align: center; color: var(--text-dim); font-size: 12px; padding: 12px 0; }
 
+  /* Charts */
+  .chart-sub { font-size: 11px; color: var(--text-muted); margin: 18px 0 6px; letter-spacing: 0.04em; }
+  .chart { width: 100%; max-width: 480px; margin: 0 auto; height: auto; display: block; direction: ltr; overflow: visible; }
+  .chart text { font-family: 'Rubik', sans-serif; font-size: 10px; fill: var(--text-muted); }
+  .chart .grid { stroke: var(--border); stroke-width: 1; }
+  .chart .line { fill: none; stroke: var(--chart-line); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .dot { fill: var(--chart-line); stroke: var(--surface); stroke-width: 2; pointer-events: none; transition: r 0.12s; }
+  .chart .hit { fill: transparent; cursor: pointer; }
+  .chart .hit:hover + .dot { r: 6; }
+  .chart .val { fill: var(--text); font-weight: 600; }
+  .chart-legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+  .chart-legend i.dudu { background: var(--dudu); }
+  .chart-legend i.ofira { background: var(--ofira); }
+  .cons-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .app-version { text-align: center; font-size: 11px; color: var(--text-dim); margin-top: 20px; }
+  .cov-note { font-size: 11px; color: var(--text-dim); margin-top: 10px; }
+  .chart .nodata { fill: var(--text-dim); }
+  .month-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 14px; }
+  .month-table th { color: var(--text-dim); font-weight: 500; text-align: start; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  .month-table td { color: var(--text); padding: 7px 4px; border-bottom: 1px solid var(--border); }
+  .month-table tr:last-child td { border-bottom: none; }
+  .month-table td.num, .month-table th.num { text-align: end; }
+  .chart-tip {
+    position: fixed; z-index: 300; pointer-events: none;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 12px; color: var(--text); white-space: pre-line;
+    box-shadow: var(--shadow-lg); transform: translate(-50%, calc(-100% - 10px));
+    opacity: 0; transition: opacity 0.12s; max-width: 220px;
+  }
+  .chart-tip.show { opacity: 1; }
+
   @media (max-width: 520px) {
     body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
     .container { padding: 20px 16px calc(32px + env(safe-area-inset-bottom)); }
@@ -499,6 +534,7 @@
       <span class="history-count" id="historyCount"></span>
     </div>
     <div class="history" id="history"></div>
+    <div class="app-version" id="appVersion"></div>
   </div>
 </div>
 
@@ -544,6 +580,8 @@
   </div>
 </div>
 
+<div class="chart-tip" id="chartTip"></div>
+
 <!-- Toast -->
 <div class="toast" id="toast">
   <span class="toast-icon"></span>
@@ -553,6 +591,8 @@
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbzgf5eya_3A7Po3FALKavEujUxpebOiF7sM3f8BNJp7auQwxZj1fONWzumvV6hEr3LM/exec';
+const APP_VERSION = '2.0';
+const APP_VERSION_DATE = '15.11.2026';
 const NAMES = { dudu: 'דודו', ofira: 'אופירה' };
 const FULL_DAYS = 14;
 const THEME_KEY = 'fuel-tracker-theme';
@@ -822,19 +862,25 @@ function computeStats() {
   const sum = (arr, key) => arr.reduce((s, e) => s + (e[key] || 0), 0);
 
   const withKm = entries.filter(e => e.km).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  const consumptions = [];
-  for (let i = 1; i < withKm.length; i++) {
-    const prev = withKm[i-1], curr = withKm[i];
-    if (!curr.liters) continue;
-    const dist = curr.km - prev.km;
-    if (dist <= 0) continue;
-    const c = (curr.liters / dist) * 100;
-    if (c > 2 && c < 30) consumptions.push(c);
-  }
+  const segments = fuelSegments();
   let consumption = null;
-  if (consumptions.length > 0) {
-    const avg = consumptions.reduce((s, x) => s + x, 0) / consumptions.length;
-    consumption = { lPer100km: avg, kmPerL: 100 / avg, samples: consumptions.length };
+  if (segments.length > 0) {
+    const segKm = segments.reduce((s, x) => s + x.km, 0);
+    const segL = segments.reduce((s, x) => s + x.liters, 0);
+    const lPer100km = segL / segKm * 100;
+    const costSegs = segments.filter(x => x.cost != null);
+    const costKm = costSegs.reduce((s, x) => s + x.km, 0);
+    consumption = {
+      lPer100km, kmPerL: 100 / lPer100km, samples: segments.length, km: segKm,
+      costPerKm: costKm > 0 ? costSegs.reduce((s, x) => s + x.cost, 0) / costKm : null
+    };
+  }
+  let kmPerMonth = null;
+  if (withKm.length >= 2) {
+    const first = withKm[0], last = withKm[withKm.length - 1];
+    const days = (new Date(last.timestamp) - new Date(first.timestamp)) / 864e5;
+    const diff = last.km - first.km;
+    if (days >= 14 && diff > 0) kmPerMonth = Math.round(diff / days * 30.44);
   }
 
   const perPerson = {
@@ -864,6 +910,8 @@ function computeStats() {
 
   return {
     monthLabel,
+    monthEntries: thisMonth,
+    perPerson,
     hasMonthData: thisMonth.length > 0,
     monthCount: thisMonth.length,
     monthCost: sum(thisMonth, 'cost'),
@@ -872,9 +920,181 @@ function computeStats() {
     totalCost: sum(entries, 'cost'),
     totalLiters: sum(entries, 'liters'),
     persons: { dudu: buildPersonStats(perPerson.dudu), ofira: buildPersonStats(perPerson.ofira) },
-    consumption, avgCostPerL, avgLitersPerFill, avgKmPerFill
+    consumption, avgCostPerL, avgLitersPerFill, avgKmPerFill, kmPerMonth,
+    segments, months: monthlyBreakdown(), prices: pricePoints()
   };
 }
+
+// Consumption by the full-tank method. A segment runs from one fill with km to the next
+// fill with km; its liters are all liters filled after the start, up to and including the end
+// (so a fill where km was skipped still counts). A segment with any fill missing liters is dropped.
+function fuelSegments() {
+  const sorted = [...entries].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  const segs = [];
+  let anchor = null, liters = 0, cost = 0, litersOk = true, costOk = true;
+  for (const e of sorted) {
+    if (anchor) {
+      if (e.liters) liters += e.liters; else litersOk = false;
+      if (e.cost) cost += e.cost; else costOk = false;
+    }
+    if (!e.km) continue;
+    if (anchor) {
+      const dist = e.km - anchor.km;
+      if (dist > 0 && litersOk) {
+        const l100 = liters / dist * 100;
+        if (l100 > 2 && l100 < 30) segs.push({ t: e.timestamp, km: dist, liters, cost: costOk ? cost : null, l100 });
+      }
+    }
+    anchor = e; liters = 0; cost = 0; litersOk = true; costOk = true;
+  }
+  return segs;
+}
+
+function pricePoints() {
+  return entries
+    .filter(e => e.cost && e.liters)
+    .map(e => ({ t: e.timestamp, v: e.cost / e.liters }))
+    .filter(p => p.v > 3 && p.v < 15)
+    .sort((a, b) => new Date(a.t) - new Date(b.t));
+}
+
+// Last 6 calendar months (up to the current one), from the first logged month on.
+function monthlyBreakdown() {
+  if (!entries.length) return [];
+  const first = new Date(Math.min(...entries.map(e => new Date(e.timestamp))));
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    if (d < new Date(first.getFullYear(), first.getMonth(), 1)) continue;
+    const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    const inM = entries.filter(e => { const t = new Date(e.timestamp); return t >= d && t < next; });
+    const by = p => inM.filter(e => e.person === p);
+    const sumK = (arr, k) => arr.reduce((s, e) => s + (e[k] || 0), 0);
+    months.push({
+      costKnown: inM.filter(e => e.cost).length,
+      litersKnown: inM.filter(e => e.liters).length,
+      label: d.toLocaleDateString('he-IL', { month: 'short' }),
+      longLabel: d.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' }),
+      count: inM.length, cost: sumK(inM, 'cost'), liters: sumK(inM, 'liters'),
+      dudu: { count: by('dudu').length, cost: sumK(by('dudu'), 'cost'), liters: sumK(by('dudu'), 'liters') },
+      ofira: { count: by('ofira').length, cost: sumK(by('ofira'), 'cost'), liters: sumK(by('ofira'), 'liters') }
+    });
+  }
+  return months;
+}
+
+// === Charts (inline SVG, left-to-right time axis) ===
+function attr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function shortDate(iso) { return new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' }); }
+
+function lineChart(points, fmt, tipLabel) {
+  const W = 320, H = 150, L = 42, R = 14, T = 16, B = 22;
+  const xs = points.map(p => new Date(p.t).getTime()), ys = points.map(p => p.v);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs);
+  if (x1 === x0) { x0 -= 864e5; x1 += 864e5; }
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const pad = (y1 - y0) * 0.2 || Math.abs(y1) * 0.08 || 1;
+  y0 -= pad; y1 += pad;
+  const X = t => L + (t - x0) / (x1 - x0) * (W - L - R);
+  const Y = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - B);
+  const grid = [0, 0.5, 1].map(k => {
+    const v = y0 + (y1 - y0) * k, y = Y(v).toFixed(1);
+    return `<line class="grid" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text x="${L - 6}" y="${(+y + 3).toFixed(1)}" text-anchor="end">${fmt(v)}</text>`;
+  }).join('');
+  const d = points.map((p, i) => `${i ? 'L' : 'M'}${X(xs[i]).toFixed(1)},${Y(p.v).toFixed(1)}`).join(' ');
+  const dots = points.map((p, i) => {
+    const cx = X(xs[i]).toFixed(1), cy = Y(p.v).toFixed(1);
+    return `<circle class="hit" cx="${cx}" cy="${cy}" r="14" data-tip="${attr(formatDate(p.t) + '\n' + tipLabel + ': ' + fmt(p.v))}"/><circle class="dot" cx="${cx}" cy="${cy}" r="4"/>`;
+  }).join('');
+  const last = points[points.length - 1];
+  const lx = X(xs[xs.length - 1]), ly = Y(last.v);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${tipLabel}">
+    ${grid}
+    <text x="${L}" y="${H - 4}">${shortDate(points[0].t)}</text>
+    <text x="${W - R}" y="${H - 4}" text-anchor="end">${shortDate(last.t)}</text>
+    <path class="line" d="${d}"/>
+    ${dots}
+    <text class="val" x="${lx.toFixed(1)}" y="${(ly - 9).toFixed(1)}" text-anchor="end">${fmt(last.v)}</text>
+  </svg>`;
+}
+
+// How complete a set of entries is for cost / liters sums.
+function coverage(arr, key) {
+  const known = arr.filter(e => e[key]).length;
+  return { known, n: arr.length, full: known === arr.length, none: known === 0 };
+}
+// Footnote under any sum that is built from only part of the fills.
+function coverageNote(arr) {
+  const c = coverage(arr, 'cost'), l = coverage(arr, 'liters');
+  if (!arr.length || (c.full && l.full)) return '';
+  let txt;
+  if (c.known === l.known) txt = `מחיר וליטרים הוזנו ב־${c.known} מתוך ${c.n} תדלוקים`;
+  else txt = [!c.full ? `מחיר ב־${c.known} מתוך ${c.n}` : '', !l.full ? `ליטרים ב־${l.known} מתוך ${l.n}` : ''].filter(Boolean).join(' · ') + ' תדלוקים';
+  return `<div class="cov-note">* סכומים חלקיים: ${txt}</div>`;
+}
+
+function topRounded(x, y, w, h, r) {
+  r = Math.min(r, h, w / 2);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+
+function monthBars(months, key, fmt) {
+  const W = 320, H = 160, L = 6, R = 6, T = 18, B = 22;
+  const max = Math.max(...months.map(m => m.dudu[key] + m.ofira[key]), 1);
+  const slot = (W - L - R) / months.length, bw = Math.min(34, slot * 0.6);
+  const ph = H - T - B;
+  const bars = months.map((m, i) => {
+    const cx = L + slot * i + slot / 2, x = cx - bw / 2;
+    const vd = m.dudu[key], vo = m.ofira[key], total = vd + vo;
+    const known = key === 'count' ? m.count : m[key + 'Known'];
+    const base0 = T + ph;
+    if (m.count > 0 && known === 0) {
+      return `<text class="nodata" x="${cx.toFixed(1)}" y="${(base0 - 6).toFixed(1)}" text-anchor="middle">אין נתון</text>
+        <text x="${cx.toFixed(1)}" y="${H - 5}" text-anchor="middle">${m.label}</text>
+        <rect class="hit" x="${(L + slot * i).toFixed(1)}" y="0" width="${slot.toFixed(1)}" height="${H}" data-tip="${attr(`${m.longLabel}\n${m.count} תדלוקים, לא הוזן ${key === 'cost' ? 'מחיר' : 'כמות ליטרים'}`)}"/>`;
+    }
+    const partial = known < m.count;
+    const lbl = v => (partial ? '≥' : '') + fmt(v);
+    const hd = vd / max * ph, ho = vo / max * ph;
+    const gap = hd > 0 && ho > 0 ? 2 : 0;
+    const base = T + ph;
+    let marks = '';
+    if (hd > 0) marks += ho > 0
+      ? `<rect x="${x.toFixed(1)}" y="${(base - hd).toFixed(1)}" width="${bw.toFixed(1)}" height="${hd.toFixed(1)}" fill="var(--dudu)"/>`
+      : `<path d="${topRounded(x, base - hd, bw, hd, 4)}" fill="var(--dudu)"/>`;
+    if (ho > 0) marks += `<path d="${topRounded(x, base - hd - gap - ho, bw, Math.max(ho, 0.5), 4)}" fill="var(--ofira)"/>`;
+    const tip = `${m.longLabel}\nסה"כ: ${lbl(total)}\nדודו: ${fmt(vd)}\nאופירה: ${fmt(vo)}` +
+      (partial ? `\n(${key === 'cost' ? 'מחיר' : 'ליטרים'} הוזנו ב־${known} מתוך ${m.count} תדלוקים)` : '');
+    return `${marks}
+      ${total > 0 ? `<text class="val" x="${cx.toFixed(1)}" y="${(base - hd - gap - ho - 5).toFixed(1)}" text-anchor="middle">${lbl(total)}</text>` : ''}
+      <text x="${cx.toFixed(1)}" y="${H - 5}" text-anchor="middle">${m.label}</text>
+      <rect class="hit" x="${(L + slot * i).toFixed(1)}" y="0" width="${slot.toFixed(1)}" height="${H}" data-tip="${attr(tip)}"/>`;
+  }).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="השוואה בין חודשים">
+    <line class="grid" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>
+    ${bars}
+  </svg>`;
+}
+
+// Tooltip for any element with data-tip (hover on desktop, tap on touch)
+(function initChartTip() {
+  const tip = document.getElementById('chartTip');
+  const show = el => {
+    tip.textContent = el.getAttribute('data-tip');
+    const r = el.getBoundingClientRect();
+    const half = Math.min(110, tip.offsetWidth / 2 || 80);
+    const left = Math.max(half + 8, Math.min(window.innerWidth - half - 8, r.left + r.width / 2));
+    tip.style.left = left + 'px';
+    tip.style.top = Math.max(r.top, 60) + 'px';
+    tip.classList.add('show');
+  };
+  const hide = () => tip.classList.remove('show');
+  document.addEventListener('pointerover', e => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el) show(el); });
+  document.addEventListener('pointerout', e => { if (e.pointerType !== 'touch' && e.target.closest && e.target.closest('[data-tip]')) hide(); });
+  document.addEventListener('pointerdown', e => { if (!(e.target.closest && e.target.closest('[data-tip]'))) hide(); });
+  window.addEventListener('scroll', hide, { passive: true });
+})();
 
 function renderStats() {
   const s = computeStats();
@@ -886,11 +1106,16 @@ function renderStats() {
   if (s.monthLiters > 0) monthTiles.push({ v: (s.monthLiters % 1 === 0 ? s.monthLiters : s.monthLiters.toFixed(1)) + 'L', l: 'ליטרים' });
   monthTiles.push({ v: s.monthCount, l: s.monthCount === 1 ? 'תדלוק' : 'תדלוקים' });
 
-  let splitDudu = 0, splitOfira = 0, splitTotal = 0, splitFmt = v => String(v);
-  if (s.monthCost > 0) {
+  // Split by money/liters only when every fill this month has that value; otherwise by count,
+  // so a fill without a price never shows up as someone paying ₪0.
+  let splitDudu = 0, splitOfira = 0, splitTotal = 0, splitFmt = v => String(v), splitBasis = 'count';
+  const mCostCov = coverage(s.monthEntries, 'cost'), mLitCov = coverage(s.monthEntries, 'liters');
+  if (s.monthCost > 0 && mCostCov.full) {
+    splitBasis = 'cost';
     splitDudu = s.persons.dudu.monthCost; splitOfira = s.persons.ofira.monthCost;
     splitTotal = s.monthCost; splitFmt = v => formatMoney(Math.round(v));
-  } else if (s.monthLiters > 0) {
+  } else if (s.monthLiters > 0 && mLitCov.full) {
+    splitBasis = 'liters';
     splitDudu = s.persons.dudu.monthLiters; splitOfira = s.persons.ofira.monthLiters;
     splitTotal = s.monthLiters; splitFmt = v => (v % 1 === 0 ? v : v.toFixed(1)) + 'L';
   } else {
@@ -916,7 +1141,9 @@ function renderStats() {
             <span class="split-item"><span class="sdot dudu"></span>דודו <span class="sval">${splitFmt(splitDudu)}</span></span>
             <span class="split-item"><span class="sdot ofira"></span>אופירה <span class="sval">${splitFmt(splitOfira)}</span></span>
           </div>
+          ${splitBasis === 'count' && s.monthCost > 0 ? `<div class="cov-note">החלוקה לפי מספר תדלוקים, כי לא בכל התדלוקים החודש הוזן מחיר</div>` : ''}
         </div>
+        ${coverageNote(s.monthEntries)}
       </div>
     `);
   } else {
@@ -942,15 +1169,59 @@ function renderStats() {
             <div class="cons-unit">ק"מ לליטר</div>
           </div>
         </div>
-        <div class="cons-note">מבוסס על ${s.consumption.samples} מדידות</div>
+        ${(s.consumption.costPerKm || s.kmPerMonth) ? `
+          <div class="cons-extra">
+            ${s.consumption.costPerKm ? `<div class="stat-tile"><div class="stat-value">₪${s.consumption.costPerKm.toFixed(2)}</div><div class="stat-label">עלות לק"מ</div></div>` : ''}
+            ${s.kmPerMonth ? `<div class="stat-tile"><div class="stat-value">${s.kmPerMonth.toLocaleString('he-IL')}</div><div class="stat-label">ק"מ בחודש (ממוצע)</div></div>` : ''}
+          </div>` : ''}
+        <div class="cons-note">מבוסס על ${s.consumption.samples} ${s.consumption.samples === 1 ? 'מדידה' : 'מדידות'} · ${Math.round(s.consumption.km).toLocaleString('he-IL')} ק"מ</div>
+        ${s.segments.length >= 2 ? `
+          <div class="chart-sub">ליטרים ל-100 ק"מ בכל תדלוק</div>
+          ${lineChart(s.segments.map(x => ({ t: x.t, v: x.l100 })), v => v.toFixed(1), 'ליטרים ל-100 ק"מ')}
+        ` : ''}
       ` : `
         <div class="empty-section">
-          נדרשים לפחות שני תדלוקים עם קילומטראז' וליטרים.<br>
-          מלאו את שני השדות בכל תדלוק לחישוב.
+          נדרשים לפחות שני תדלוקים עם קילומטראז', וליטרים בתדלוק השני.<br>
+          לחישוב מדויק: מלאו מכל עד הסוף והזינו קילומטראז' בכל תדלוק.
         </div>
       `}
     </div>
   `);
+
+  if (s.prices.length >= 2) {
+    parts.push(`
+      <div class="stats-section">
+        <h3>מחיר דלק לליטר</h3>
+        ${lineChart(s.prices, v => '₪' + v.toFixed(2), 'מחיר לליטר')}
+      </div>
+    `);
+  }
+
+  if (s.months.length >= 2) {
+    const anyCost = s.months.some(m => m.cost > 0), anyLiters = s.months.some(m => m.liters > 0);
+    const key = anyCost ? 'cost' : anyLiters ? 'liters' : 'count';
+    const fmt = key === 'cost' ? v => formatMoney(Math.round(v)) : key === 'liters' ? v => Math.round(v) + 'L' : v => String(v);
+    const title = key === 'cost' ? 'עלות לפי חודש' : key === 'liters' ? 'ליטרים לפי חודש' : 'תדלוקים לפי חודש';
+    parts.push(`
+      <div class="stats-section">
+        <h3>השוואה בין חודשים <span class="period">${title}</span></h3>
+        <div class="chart-legend"><span><i class="dudu"></i>דודו</span><span><i class="ofira"></i>אופירה</span></div>
+        ${monthBars(s.months, key, fmt)}
+        <table class="month-table">
+          <thead><tr><th>חודש</th><th class="num">תדלוקים</th><th class="num">ליטרים</th><th class="num">עלות</th></tr></thead>
+          <tbody>
+            ${[...s.months].reverse().map(m => `<tr>
+              <td>${m.longLabel}</td>
+              <td class="num">${m.count}</td>
+              <td class="num">${m.litersKnown ? `<span dir="ltr">${m.litersKnown < m.count ? '≥' : ''}${Math.round(m.liters)}</span>` : '—'}</td>
+              <td class="num">${m.costKnown ? `<span dir="ltr">${m.costKnown < m.count ? '≥' : ''}${formatMoney(Math.round(m.cost))}</span>` : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        ${s.months.some(m => m.costKnown < m.count || m.litersKnown < m.count) ? `<div class="cov-note">— = לא הוזן · <span dir="ltr">≥</span> = רק חלק מהתדלוקים בחודש הוזנו, הסכום האמיתי גבוה יותר</div>` : ''}
+      </div>
+    `);
+  }
 
   const personSection = ['dudu', 'ofira'].map(p => {
     const ps = s.persons[p];
@@ -969,6 +1240,7 @@ function renderStats() {
           <div class="person-stat-grid">
             ${items.map(it => `<div class="person-stat-item"><div class="v">${it.v}</div><div class="l">${it.l}</div></div>`).join('')}
           </div>
+          ${coverageNote(s.perPerson[p].all)}
         ` : '<div class="empty-section">אין נתונים</div>'}
       </div>
     `;
@@ -1005,6 +1277,7 @@ function renderStats() {
       <div class="stats-grid">
         ${totalTiles.map(t => `<div class="stat-tile"><div class="stat-value">${t.v}</div><div class="stat-label">${t.l}</div></div>`).join('')}
       </div>
+      ${coverageNote(entries)}
     </div>
   `);
 
@@ -1064,10 +1337,22 @@ async function confirmLog() {
   setSync('syncing', 'שומר');
   try {
     await apiAdd(entry);
-    entries.push(entry);
-    setSync('ok', 'מסונכרן');
+    // Read back from the server and check every value we sent actually came back.
+    let verified = false, missing = [];
+    try {
+      const list = await apiList();
+      const saved = list.find(x => x.id === entry.id);
+      const labels = { cost: 'מחיר', liters: 'ליטרים', km: 'קילומטראז\'' };
+      if (saved) {
+        missing = Object.keys(labels).filter(k => entry[k] != null && Number(saved[k]) !== entry[k]).map(k => labels[k]);
+        verified = missing.length === 0;
+      } else missing = ['התדלוק כולו'];
+      entries = list;
+    } catch { entries.push(entry); }
+    setSync(verified ? 'ok' : 'error', verified ? 'מסונכרן' : 'לא אומת');
     closeModal(); render();
-    showToast('נשמר', async () => {
+    if (missing.length) showError('אזהרה: השרת לא שמר את ' + missing.join(', ') + '. בדקו את הגיליון.');
+    showToast(verified ? 'נשמר ואומת בשרת ✓' : 'נשמר, אבל לא אומת', async () => {
       entries = entries.filter(x => x.id !== entry.id);
       render();
       try { await apiDelete(entry.id); } catch { showError('בוטל מקומית, מחיקה בשרת נכשלה'); }
@@ -1101,6 +1386,7 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+document.getElementById('appVersion').textContent = `גרסה ${APP_VERSION} · ${APP_VERSION_DATE}`;
 initialLoad();
 </script>
 </body>
