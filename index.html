@@ -259,6 +259,15 @@
     transition: all 0.15s;
   }
   .delete-btn:hover { color: var(--warn); border-color: var(--tint-warn-border); }
+  .edit-btn:hover { color: var(--text); border-color: var(--border); }
+  .person-pick { display: flex; gap: 8px; margin-bottom: 14px; }
+  .person-pick button {
+    flex: 1; padding: 9px; border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+  }
+  .person-pick button[data-p="dudu"].on { color: var(--dudu); border-color: var(--tint-dudu-border); background: var(--tint-dudu); }
+  .person-pick button[data-p="ofira"].on { color: var(--ofira); border-color: var(--tint-ofira-border); background: var(--tint-ofira); }
   .entry-details {
     display: flex; gap: 8px; margin-top: 10px;
     padding-inline-start: 21px; flex-wrap: wrap;
@@ -557,7 +566,12 @@
 <div class="modal-backdrop" id="modal">
   <div class="modal">
     <h3 id="modalTitle"></h3>
-    <div class="modal-sub">רישום תדלוק חדש</div>
+    <div class="modal-sub" id="modalSub">רישום תדלוק חדש</div>
+
+    <div class="person-pick" id="personPick" style="display:none;">
+      <button type="button" data-p="dudu" onclick="pickPerson('dudu')">דודו</button>
+      <button type="button" data-p="ofira" onclick="pickPerson('ofira')">אופירה</button>
+    </div>
 
     <label>תאריך ושעה</label>
     <input type="datetime-local" id="modalDate">
@@ -592,7 +606,7 @@
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbzgf5eya_3A7Po3FALKavEujUxpebOiF7sM3f8BNJp7auQwxZj1fONWzumvV6hEr3LM/exec';
 const APP_VERSION = '2.0';
-const APP_VERSION_DATE = '15.11.2026';
+const APP_VERSION_DATE = '16.11.2026';
 const NAMES = { dudu: 'דודו', ofira: 'אופירה' };
 const FULL_DAYS = 14;
 const THEME_KEY = 'fuel-tracker-theme';
@@ -603,6 +617,7 @@ const PUMP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 
 let entries = [];
 let pendingPerson = null;
+let editingId = null;
 
 // === Theme ===
 function applyTheme(theme) {
@@ -844,6 +859,7 @@ function render() {
           <span class="entry-dot ${e.person}"></span>
           <span class="entry-name">${NAMES[e.person]}</span>
           <span class="entry-date">${formatDate(e.timestamp)}</span>
+          <button class="delete-btn edit-btn" onclick="openEdit('${e.id}')" title="ערוך">✎</button>
           <button class="delete-btn" onclick="deleteEntry('${e.id}')" title="מחק">✕</button>
         </div>
         ${chips.length ? `<div class="entry-details">${chips.join('')}</div>` : ''}
@@ -1306,13 +1322,47 @@ function openLog(person) {
   document.getElementById('modalCost').value = '';
   document.getElementById('modalLiters').value = '';
   document.getElementById('modalKm').value = '';
+  editingId = null;
+  document.getElementById('modalSub').textContent = 'רישום תדלוק חדש';
+  document.getElementById('personPick').style.display = 'none';
   document.getElementById('confirmBtn').disabled = false;
   document.getElementById('confirmBtn').textContent = 'שמור';
   document.getElementById('modal').classList.add('open');
 }
+// Edit = open the same modal pre-filled; saving adds the corrected entry, verifies it, then deletes the old one.
+function openEdit(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  openLog(e.person);
+  editingId = id;
+  const d = new Date(e.timestamp);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  document.getElementById('modalDate').value = d.toISOString().slice(0, 16);
+  document.getElementById('modalCost').value = e.cost ?? '';
+  document.getElementById('modalLiters').value = e.liters ?? '';
+  document.getElementById('modalKm').value = e.km ?? '';
+  document.getElementById('modalTitle').textContent = 'עריכת תדלוק';
+  document.getElementById('modalSub').textContent = 'תקנו את מה שצריך ושמרו';
+  document.getElementById('personPick').style.display = 'flex';
+  pickPerson(e.person);
+}
+function pickPerson(p) {
+  pendingPerson = p;
+  document.querySelectorAll('#personPick button').forEach(b => b.classList.toggle('on', b.dataset.p === p));
+}
 function closeModal() {
   document.getElementById('modal').classList.remove('open');
   pendingPerson = null;
+  editingId = null;
+}
+// Read the list back from the server and check every value we sent came back.
+async function verifySaved(entry) {
+  const labels = { cost: 'מחיר', liters: 'ליטרים', km: 'קילומטראז\'' };
+  const list = await apiList();
+  const saved = list.find(x => x.id === entry.id);
+  const missing = !saved ? ['התדלוק כולו']
+    : Object.keys(labels).filter(k => entry[k] != null && Number(saved[k]) !== entry[k]).map(k => labels[k]);
+  return { list, missing };
 }
 function parseNum(id) {
   const v = document.getElementById(id).value.trim();
@@ -1335,20 +1385,29 @@ async function confirmLog() {
   const btn = document.getElementById('confirmBtn');
   btn.disabled = true; btn.textContent = 'שומר…';
   setSync('syncing', 'שומר');
+  const oldId = editingId;
   try {
     await apiAdd(entry);
-    // Read back from the server and check every value we sent actually came back.
     let verified = false, missing = [];
     try {
-      const list = await apiList();
-      const saved = list.find(x => x.id === entry.id);
-      const labels = { cost: 'מחיר', liters: 'ליטרים', km: 'קילומטראז\'' };
-      if (saved) {
-        missing = Object.keys(labels).filter(k => entry[k] != null && Number(saved[k]) !== entry[k]).map(k => labels[k]);
-        verified = missing.length === 0;
-      } else missing = ['התדלוק כולו'];
-      entries = list;
+      const r = await verifySaved(entry);
+      missing = r.missing; verified = !missing.length; entries = r.list;
     } catch { entries.push(entry); }
+
+    if (oldId) {
+      // Only remove the original once the corrected copy is confirmed on the server.
+      if (verified) {
+        try { await apiDelete(oldId); entries = entries.filter(x => x.id !== oldId); }
+        catch { verified = false; showError('התיקון נשמר, אבל הרישום הישן לא נמחק. מחקו אותו ידנית.'); }
+      } else {
+        showError('התיקון לא אומת בשרת, ולכן הרישום הישן נשאר. בדקו ומחקו את הכפול.');
+      }
+      setSync(verified ? 'ok' : 'error', verified ? 'מסונכרן' : 'לא אומת');
+      closeModal(); render();
+      showToast(verified ? 'התיקון נשמר ואומת ✓' : 'התיקון לא הושלם');
+      return;
+    }
+
     setSync(verified ? 'ok' : 'error', verified ? 'מסונכרן' : 'לא אומת');
     closeModal(); render();
     if (missing.length) showError('אזהרה: השרת לא שמר את ' + missing.join(', ') + '. בדקו את הגיליון.');
